@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swara</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&family=Noto+Sans+Telugu:wght@400;600&family=Noto+Sans+Malayalam:wght@400;600&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+JP:wght@400;600&family=Noto+Sans+SC:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F8F6FF; --surface:#FFFFFF; --surface-2:#F0EAFF;
+    --ink:#241B3D; --ink-soft:#6E6285;
+    --accent:#7C3AED; --accent-ink:#FFFFFF;
+    --accent-2:#A3E635; --accent-2-text:#4D7C0F; --accent-2-ink:#1F2937;
+    --border:#E4DBFF; --shadow:rgba(45,20,80,0.10);
+    --success:#16A34A; --success-bg:#DCFCE7;
+    --retry:#DC2626; --retry-bg:#FEE2E2;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#160F27; --surface:#20172E; --surface-2:#2A1F3D;
+      --ink:#F3EEFF; --ink-soft:#B7A8D6;
+      --accent:#A78BFA; --accent-ink:#1E1033;
+      --accent-2:#BEF264; --accent-2-text:#BEF264; --accent-2-ink:#1A2E05;
+      --border:#3D2E56; --shadow:rgba(0,0,0,0.45);
+      --success:#4ADE80; --success-bg:#14251A;
+      --retry:#F87171; --retry-bg:#3A1616;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#160F27; --surface:#20172E; --surface-2:#2A1F3D;
+    --ink:#F3EEFF; --ink-soft:#B7A8D6;
+    --accent:#A78BFA; --accent-ink:#1E1033;
+    --accent-2:#BEF264; --accent-2-text:#BEF264; --accent-2-ink:#1A2E05;
+    --border:#3D2E56; --shadow:rgba(0,0,0,0.45);
+    --success:#4ADE80; --success-bg:#14251A;
+    --retry:#F87171; --retry-bg:#3A1616;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+    padding:24px 16px 48px; margin:0;
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Poppins','DM Sans',sans-serif; text-wrap:balance; margin:0;}
+  button{font-family:inherit;}
+  .app-shell{max-width:480px; margin:0 auto;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;}
+  .wordmark{font-family:'Poppins',sans-serif; font-weight:700; font-size:1.3rem; letter-spacing:0.01em; display:flex; align-items:center; gap:8px;}
+  .wordmark svg{width:22px; height:22px;}
+  .streak-pill{display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:6px 12px; font-weight:700; font-size:0.9rem; font-variant-numeric:tabular-nums;}
+
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:26px; padding:28px 24px; box-shadow:0 10px 28px var(--shadow); position:relative; overflow:hidden; animation:cardIn .35s ease both;}
+  .stage{display:flex; flex-direction:column; gap:16px;}
+  @keyframes cardIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  @media (prefers-reduced-motion: reduce){ .card{animation:none;} }
+
+  .eyebrow{font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); font-weight:700;}
+
+  /* ---- Mascot ---- */
+  .mascot-badge{
+    width:104px; height:104px; border-radius:50%; margin:0 auto;
+    background:radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--accent-2) 45%, transparent), transparent 62%), var(--surface-2);
+    display:flex; align-items:center; justify-content:center;
+    animation:mascotBob 2.8s ease-in-out infinite;
+  }
+  .mascot-hero{display:flex; flex-direction:column; align-items:center; text-align:center; gap:12px; margin-bottom:2px;}
+  @keyframes mascotBob{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);} }
+  @media (prefers-reduced-motion: reduce){ .mascot-badge{animation:none;} }
+  .mascot-row{display:flex; align-items:center; gap:12px;}
+  .mascot-row .mascot-badge{width:52px; height:52px; margin:0; flex-shrink:0;}
+  .mascot-row.small .mascot-badge{width:40px; height:40px;}
+  .speech-bubble{
+    position:relative; background:var(--surface-2); border-radius:14px; padding:11px 15px;
+    font-size:0.92rem; font-weight:600; line-height:1.35; flex:1;
+  }
+  .speech-bubble::before{
+    content:''; position:absolute; left:-5px; top:18px; width:11px; height:11px;
+    background:var(--surface-2); transform:rotate(45deg); border-radius:2px;
+  }
+
+  .hero-title{font-size:1.55rem; margin-top:2px;}
+  .hero-tagline{color:var(--ink-soft); font-size:0.95rem; line-height:1.5; margin-top:2px;}
+
+  .step-progress{display:flex; gap:6px; margin:18px 0 22px;}
+  .step-dot{height:5px; flex:1; border-radius:3px; background:var(--surface-2);}
+  .step-dot.done{background:var(--accent);}
+
+  .q-title{font-size:1.35rem; font-weight:600; margin-bottom:4px;}
+  .q-sub{color:var(--ink-soft); font-size:0.92rem; margin-bottom:14px;}
+
+  .option-list{display:flex; flex-direction:column; gap:10px;}
+  .option-card{
+    text-align:left; background:var(--surface); border:1.5px solid var(--border); border-radius:16px;
+    padding:14px 16px; cursor:pointer; transition:border-color .15s, transform .12s;
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .option-card:hover{border-color:var(--accent); transform:translateY(-1px);}
+  .option-card:active{transform:scale(0.98);}
+  .option-card:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .option-card .opt-title{font-weight:700; font-size:1rem;}
+  .option-card .opt-sub{color:var(--ink-soft); font-size:0.85rem;}
+
+  .lang-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .lang-card{
+    background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:14px;
+    cursor:pointer; text-align:left; display:flex; flex-direction:column; gap:4px; transition:border-color .15s, transform .12s;
+  }
+  .lang-card:hover{border-color:var(--accent); transform:translateY(-1px);}
+  .lang-card:active{transform:scale(0.98);}
+  .lang-card:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .lang-native{font-weight:600; font-size:1.15rem;}
+  .lang-en{color:var(--ink-soft); font-size:0.8rem;}
+  .lang-group-label{font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); font-weight:700; margin:14px 0 8px;}
+  .lang-group-label:first-child{margin-top:0;}
+
+  .btn{
+    border:none; border-radius:999px; padding:13px 22px; font-weight:700; font-size:0.98rem;
+    cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; transition:transform .12s ease;
+  }
+  .btn:active{transform:scale(0.96);}
+  .btn-primary{background:var(--accent); color:var(--accent-ink);}
+  .btn-ghost{background:transparent; color:var(--accent); border:1.5px solid var(--border);}
+  .btn-text{background:none; border:none; color:var(--ink-soft); font-size:0.85rem; text-decoration:underline; cursor:pointer; width:auto; padding:4px;}
+  .btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .btn-row{display:flex; gap:10px;}
+  .btn-row .btn{width:auto; flex:1;}
+
+  .comeback-banner{
+    background:linear-gradient(135deg, var(--accent-2) 0%, color-mix(in srgb, var(--accent-2) 75%, var(--surface)) 100%);
+    color:var(--accent-2-ink); border-radius:20px; padding:18px 20px; margin-bottom:16px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .comeback-banner .cb-eyebrow{font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; font-weight:800; opacity:0.75;}
+  .comeback-banner h3{font-size:1.15rem;}
+  .comeback-banner p{margin:0; font-size:0.92rem; line-height:1.45;}
+  .comeback-banner .mascot-badge{background:rgba(255,255,255,0.35);}
+
+  .home-headline{font-size:1.5rem; margin-bottom:2px;}
+  .home-sub{color:var(--ink-soft); font-size:0.92rem; margin-bottom:18px;}
+  .home-lang-tile{
+    display:flex; align-items:center; gap:14px; background:var(--surface-2); border:none; border-radius:16px;
+    padding:14px 16px; margin-bottom:18px; width:100%; text-align:left; cursor:pointer;
+    font-family:inherit; color:var(--ink); transition:transform .12s ease, background .15s;
+  }
+  .home-lang-tile:hover{background:color-mix(in srgb, var(--accent) 10%, var(--surface-2));}
+  .home-lang-tile:active{transform:scale(0.98);}
+  .home-lang-tile:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .home-lang-tile .native{font-size:1.5rem; font-weight:600;}
+  .home-lang-tile .tile-info{flex:1;}
+  .home-lang-tile .meta{color:var(--ink-soft); font-size:0.82rem;}
+  .home-lang-tile .tile-chevron{color:var(--ink-soft); flex-shrink:0;}
+
+  .session-progress-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; font-size:0.85rem; color:var(--ink-soft); font-variant-numeric:tabular-nums;}
+  .session-bar{height:5px; background:var(--surface-2); border-radius:3px; overflow:hidden; margin-bottom:20px;}
+  .session-bar-fill{height:100%; background:var(--accent); transition:width .3s;}
+
+  .vocab-stage{text-align:center; padding:8px 0 4px;}
+  .vocab-script{font-size:2.4rem; font-weight:600; line-height:1.25; margin-bottom:6px;}
+  .font-deva{font-family:'Noto Sans Devanagari',sans-serif;}
+  .font-tam{font-family:'Noto Sans Tamil',sans-serif;}
+  .font-tel{font-family:'Noto Sans Telugu',sans-serif;}
+  .font-mal{font-family:'Noto Sans Malayalam',sans-serif;}
+  .font-kan{font-family:'Noto Sans Kannada',sans-serif;}
+  .font-jp{font-family:'Noto Sans JP',sans-serif;}
+  .font-sc{font-family:'Noto Sans SC',sans-serif;}
+  .font-latin{font-family:'Poppins',sans-serif;}
+  .vocab-translit{color:var(--ink-soft); font-size:1.02rem; margin-bottom:2px;}
+  .vocab-meaning{font-size:0.98rem; color:var(--ink-soft);}
+  .vocab-meaning.gloss-en{font-style:italic;}
+  .vocab-meaning .meaning-sub{font-size:0.8rem; opacity:0.8;}
+
+  .voice-row{display:flex; gap:10px; margin-top:22px;}
+  .voice-btn{
+    flex:1; border-radius:18px; border:1.5px solid var(--border); background:var(--surface-2);
+    padding:16px 10px; display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer;
+    font-weight:700; font-size:0.88rem; color:var(--ink); transition:transform .12s ease;
+  }
+  .voice-btn:active{transform:scale(0.97);}
+  .voice-btn svg{width:26px; height:26px;}
+  .voice-btn.mic-btn{border-color:color-mix(in srgb, var(--accent) 45%, var(--border)); color:var(--accent);}
+  .voice-btn.listening{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, var(--surface)); color:var(--accent);}
+  .voice-btn.listening svg{animation:micPulse 0.9s ease-in-out infinite;}
+  @keyframes micPulse{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.18);} }
+  @media (prefers-reduced-motion: reduce){ .voice-btn.listening svg{animation:none;} }
+
+  .voice-note{font-size:0.78rem; color:var(--ink-soft); margin-top:10px; text-align:center; line-height:1.4;}
+
+  .feedback-row{margin-top:16px;}
+  .feedback-row .speech-bubble.correct{background:var(--success-bg); color:var(--success);}
+  .feedback-row .speech-bubble.correct::before{background:var(--success-bg);}
+  .feedback-row .speech-bubble.retry{background:var(--retry-bg); color:var(--retry);}
+  .feedback-row .speech-bubble.retry::before{background:var(--retry-bg);}
+
+  .self-check-row{display:flex; gap:10px; margin-top:16px;}
+
+  .summary-stats{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:18px 0 22px;}
+  .stat-tile{background:var(--surface-2); border-radius:16px; padding:14px 8px; text-align:center;}
+  .stat-num{font-family:'Poppins',sans-serif; font-size:1.6rem; font-weight:700; font-variant-numeric:tabular-nums; display:block;}
+  .stat-label{font-size:0.72rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.04em;}
+
+  .milestone-panel{
+    background:linear-gradient(135deg, var(--accent-2) 0%, color-mix(in srgb, var(--accent-2) 70%, var(--surface)) 100%);
+    color:var(--accent-2-ink); border-radius:18px; padding:16px 18px; margin:14px 0; font-weight:700; text-align:center;
+  }
+
+  .confetti{position:absolute; inset:0; overflow:hidden; pointer-events:none; border-radius:inherit;}
+  .confetti i{position:absolute; top:-12px; width:7px; height:11px; border-radius:2px; opacity:0.95; animation:confettiFall 1000ms ease-in forwards;}
+  @keyframes confettiFall{ to{ transform:translateY(160px) rotate(220deg); opacity:0; } }
+
+  .modal-backdrop{position:fixed; inset:0; background:rgba(10,15,17,0.5); display:flex; align-items:flex-end; justify-content:center; padding:16px; z-index:10;}
+  .modal-sheet{background:var(--surface); border-radius:24px; padding:22px; width:100%; max-width:448px; max-height:82vh; overflow-y:auto;}
+
+  @media (max-width:400px){
+    .card{padding:22px 16px;}
+    .vocab-script{font-size:2rem;}
+    .lang-grid{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="app-shell" id="app"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var LANGUAGES = [
+    {code:'hi', name:'Hindi', native:'हिन्दी', speech:'hi-IN', font:'font-deva', group:'Indian languages'},
+    {code:'ta', name:'Tamil', native:'தமிழ்', speech:'ta-IN', font:'font-tam', group:'Indian languages'},
+    {code:'te', name:'Telugu', native:'తెలుగు', speech:'te-IN', font:'font-tel', group:'Indian languages'},
+    {code:'ml', name:'Malayalam', native:'മലയാളം', speech:'ml-IN', font:'font-mal', group:'Indian languages'},
+    {code:'kn', name:'Kannada', native:'ಕನ್ನಡ', speech:'kn-IN', font:'font-kan', group:'Indian languages'},
+    {code:'de', name:'German', native:'Deutsch', speech:'de-DE', font:'font-latin', group:'World languages'},
+    {code:'es', name:'Spanish', native:'Español', speech:'es-ES', font:'font-latin', group:'World languages'},
+    {code:'ja', name:'Japanese', native:'日本語', speech:'ja-JP', font:'font-jp', group:'World languages'},
+    {code:'zh', name:'Mandarin', native:'中文', speech:'zh-CN', font:'font-sc', group:'World languages'}
+  ];
+
+  // Starter vocabulary only — common textbook words, NOT yet reviewed by native speakers.
+  // Categories are kept in the same order across every language so word[i] means the
+  // same concept everywhere — that parallel structure is what lets us show a learner's
+  // OWN language as the meaning gloss instead of assuming everyone reads English.
+  var VOCAB = {
+    hi: [
+      {label:'Everyday Essentials', words:[['नमस्ते','Namaste','Hello'],['धन्यवाद','Dhanyavaad','Thank you'],['कृपया','Kripya','Please'],['हाँ','Haan','Yes'],['नहीं','Nahin','No'],['पानी','Paani','Water'],['खाना','Khaana','Food'],['अच्छा','Achha','Good'],['नाम','Naam','Name'],['घर','Ghar','Home']]},
+      {label:'Numbers', words:[['एक','Ek','One'],['दो','Do','Two'],['तीन','Teen','Three'],['चार','Chaar','Four'],['पाँच','Paanch','Five'],['छह','Chhah','Six'],['सात','Saat','Seven'],['आठ','Aath','Eight']]},
+      {label:'Family & People', words:[['माँ','Maa','Mother'],['पिता','Pita','Father'],['बहन','Bahan','Sister'],['भाई','Bhai','Brother'],['दोस्त','Dost','Friend'],['बच्चा','Bachcha','Child'],['आदमी','Aadmi','Man'],['औरत','Aurat','Woman']]}
+    ],
+    ta: [
+      {label:'Everyday Essentials', words:[['வணக்கம்','Vanakkam','Hello'],['நன்றி','Nandri','Thank you'],['தயவு செய்து','Thayavu seydhu','Please'],['ஆம்','Aam','Yes'],['இல்லை','Illai','No'],['தண்ணீர்','Thanneer','Water'],['சாப்பாடு','Saapadu','Food'],['நல்லது','Nalladhu','Good'],['பெயர்','Peyar','Name'],['வீடு','Veedu','Home']]},
+      {label:'Numbers', words:[['ஒன்று','Ondru','One'],['இரண்டு','Irandu','Two'],['மூன்று','Moondru','Three'],['நான்கு','Naangu','Four'],['ஐந்து','Aindhu','Five'],['ஆறு','Aaru','Six'],['ஏழு','Ezhu','Seven'],['எட்டு','Ettu','Eight']]},
+      {label:'Family & People', words:[['அம்மா','Amma','Mother'],['அப்பா','Appa','Father'],['சகோதரி','Sakodhari','Sister'],['சகோதரன்','Sakodharan','Brother'],['நண்பன்','Nanban','Friend'],['குழந்தை','Kuzhandhai','Child'],['மனிதன்','Manithan','Man'],['பெண்','Pen','Woman']]}
+    ],
+    te: [
+      {label:'Everyday Essentials', words:[['నమస్కారం','Namaskaram','Hello'],['ధన్యవాదాలు','Dhanyavaadalu','Thank you'],['దయచేసి','Dayachesi','Please'],['అవును','Avunu','Yes'],['కాదు','Kaadu','No'],['నీరు','Neeru','Water'],['ఆహారం','Aahaaram','Food'],['మంచిది','Manchidi','Good'],['పేరు','Peru','Name'],['ఇల్లు','Illu','Home']]},
+      {label:'Numbers', words:[['ఒకటి','Okati','One'],['రెండు','Rendu','Two'],['మూడు','Moodu','Three'],['నాలుగు','Naalugu','Four'],['ఐదు','Aidu','Five'],['ఆరు','Aaru','Six'],['ఏడు','Edu','Seven'],['ఎనిమిది','Enimidi','Eight']]},
+      {label:'Family & People', words:[['అమ్మ','Amma','Mother'],['నాన్న','Nanna','Father'],['అక్క','Akka','Sister'],['అన్న','Anna','Brother'],['స్నేహితుడు','Snehithudu','Friend'],['పిల్లవాడు','Pillavaadu','Child'],['మనిషి','Manishi','Man'],['స్త్రీ','Stree','Woman']]}
+    ],
+    ml: [
+      {label:'Everyday Essentials', words:[['നമസ്കാരം','Namaskaram','Hello'],['നന്ദി','Nandi','Thank you'],['ദയവായി','Dayavayi','Please'],['അതെ','Athe','Yes'],['ഇല്ല','Illa','No'],['വെള്ളം','Vellam','Water'],['ഭക്ഷണം','Bhakshanam','Food'],['നല്ലത്','Nallathu','Good'],['പേര്','Peru','Name'],['വീട്','Veedu','Home']]},
+      {label:'Numbers', words:[['ഒന്ന്','Onnu','One'],['രണ്ട്','Randu','Two'],['മൂന്ന്','Moonu','Three'],['നാല്','Naalu','Four'],['അഞ്ച്','Anchu','Five'],['ആറ്','Aaru','Six'],['ഏഴ്','Ezhu','Seven'],['എട്ട്','Ettu','Eight']]},
+      {label:'Family & People', words:[['അമ്മ','Amma','Mother'],['അച്ഛൻ','Achan','Father'],['സഹോദരി','Sahodari','Sister'],['സഹോദരൻ','Sahodaran','Brother'],['സുഹൃത്ത്','Suhruth','Friend'],['കുട്ടി','Kutty','Child'],['മനുഷ്യൻ','Manushyan','Man'],['സ്ത്രീ','Sthree','Woman']]}
+    ],
+    kn: [
+      {label:'Everyday Essentials', words:[['ನಮಸ್ಕಾರ','Namaskara','Hello'],['ಧನ್ಯವಾದಗಳು','Dhanyavaadagalu','Thank you'],['ದಯವಿಟ್ಟು','Dayavittu','Please'],['ಹೌದು','Haudu','Yes'],['ಇಲ್ಲ','Illa','No'],['ನೀರು','Neeru','Water'],['ಆಹಾರ','Aahara','Food'],['ಒಳ್ಳೆಯದು','Olleyadu','Good'],['ಹೆಸರು','Hesaru','Name'],['ಮನೆ','Mane','Home']]},
+      {label:'Numbers', words:[['ಒಂದು','Ondu','One'],['ಎರಡು','Eradu','Two'],['ಮೂರು','Mooru','Three'],['ನಾಲ್ಕು','Naalku','Four'],['ಐದು','Aidu','Five'],['ಆರು','Aaru','Six'],['ಏಳು','Elu','Seven'],['ಎಂಟು','Entu','Eight']]},
+      {label:'Family & People', words:[['ಅಮ್ಮ','Amma','Mother'],['ಅಪ್ಪ','Appa','Father'],['ಅಕ್ಕ','Akka','Sister'],['ಅಣ್ಣ','Anna','Brother'],['ಸ್ನೇಹಿತ','Snehita','Friend'],['ಮಗು','Magu','Child'],['ಮನುಷ್ಯ','Manushya','Man'],['ಮಹಿಳೆ','Mahile','Woman']]}
+    ],
+    de: [
+      {label:'Everyday Essentials', words:[['Hallo','Hallo','Hello'],['Danke','Danke','Thank you'],['Bitte','Bitte','Please'],['Ja','Ja','Yes'],['Nein','Nein','No'],['Wasser','Wasser','Water'],['Essen','Essen','Food'],['Gut','Gut','Good'],['Name','Name','Name'],['Zuhause','Zuhause','Home']]},
+      {label:'Numbers', words:[['eins','eins','One'],['zwei','zwei','Two'],['drei','drei','Three'],['vier','vier','Four'],['fünf','fünf','Five'],['sechs','sechs','Six'],['sieben','sieben','Seven'],['acht','acht','Eight']]},
+      {label:'Family & People', words:[['Mutter','Mutter','Mother'],['Vater','Vater','Father'],['Schwester','Schwester','Sister'],['Bruder','Bruder','Brother'],['Freund','Freund','Friend'],['Kind','Kind','Child'],['Mann','Mann','Man'],['Frau','Frau','Woman']]}
+    ],
+    es: [
+      {label:'Everyday Essentials', words:[['Hola','Hola','Hello'],['Gracias','Gracias','Thank you'],['Por favor','Por favor','Please'],['Sí','Sí','Yes'],['No','No','No'],['Agua','Agua','Water'],['Comida','Comida','Food'],['Bueno','Bueno','Good'],['Nombre','Nombre','Name'],['Casa','Casa','Home']]},
+      {label:'Numbers', words:[['uno','uno','One'],['dos','dos','Two'],['tres','tres','Three'],['cuatro','cuatro','Four'],['cinco','cinco','Five'],['seis','seis','Six'],['siete','siete','Seven'],['ocho','ocho','Eight']]},
+      {label:'Family & People', words:[['Madre','Madre','Mother'],['Padre','Padre','Father'],['Hermana','Hermana','Sister'],['Hermano','Hermano','Brother'],['Amigo','Amigo','Friend'],['Niño','Niño','Child'],['Hombre','Hombre','Man'],['Mujer','Mujer','Woman']]}
+    ],
+    ja: [
+      {label:'Everyday Essentials', words:[['こんにちは','Konnichiwa','Hello'],['ありがとう','Arigatou','Thank you'],['お願いします','Onegaishimasu','Please'],['はい','Hai','Yes'],['いいえ','Iie','No'],['水','Mizu','Water'],['食べ物','Tabemono','Food'],['良い','Ii','Good'],['名前','Namae','Name'],['家','Ie','Home']]},
+      {label:'Numbers', words:[['一','Ichi','One'],['二','Ni','Two'],['三','San','Three'],['四','Yon','Four'],['五','Go','Five'],['六','Roku','Six'],['七','Nana','Seven'],['八','Hachi','Eight']]},
+      {label:'Family & People', words:[['母','Haha','Mother'],['父','Chichi','Father'],['姉','Ane','Sister'],['兄','Ani','Brother'],['友達','Tomodachi','Friend'],['子供','Kodomo','Child'],['男性','Dansei','Man'],['女性','Josei','Woman']]}
+    ],
+    zh: [
+      {label:'Everyday Essentials', words:[['你好','Nǐ hǎo','Hello'],['谢谢','Xièxiè','Thank you'],['请','Qǐng','Please'],['是','Shì','Yes'],['不是','Bù shì','No'],['水','Shuǐ','Water'],['食物','Shíwù','Food'],['好','Hǎo','Good'],['名字','Míngzì','Name'],['家','Jiā','Home']]},
+      {label:'Numbers', words:[['一','Yī','One'],['二','Èr','Two'],['三','Sān','Three'],['四','Sì','Four'],['五','Wǔ','Five'],['六','Liù','Six'],['七','Qī','Seven'],['八','Bā','Eight']]},
+      {label:'Family & People', words:[['妈妈','Māma','Mother'],['爸爸','Bàba','Father'],['姐姐','Jiějiě','Sister'],['哥哥','Gēge','Brother'],['朋友','Péngyǒu','Friend'],['孩子','Háizi','Child'],['男人','Nánrén','Man'],['女人','Nǚrén','Woman']]}
+    ]
+  };
+
+  var MOTIVATION_COPY = {
+    travel:  {label:'Travel', sub:'a trip is coming up', comeback:'Packing your words for the trip — let’s refresh before you go.'},
+    roots:   {label:'Roots', sub:'family & heritage connection', comeback:'Reconnect with your roots — a quick refresher with the words you’ve started building.'},
+    work:    {label:'Work', sub:'a professional edge', comeback:'Keep your edge sharp — a quick refresher before you dive back in.'},
+    curious: {label:'Curious', sub:'no particular reason, just exploring', comeback:'Curiosity called you back — let’s pick up right where you left off.'}
+  };
+
+  var GOAL_MINUTES = {2:4, 5:10, 10:16};
+  var MILESTONES = [3,7,14,30,60,100];
+
+  var CHEER_LINES = ['Nailed it!', 'That’s the one!', 'Beautiful — say it just like that.', 'You’re getting fast at this.'];
+  var NUDGE_LINES = ['So close — one more go next round.', 'Good attempt, it’ll stick soon.', 'Not quite, but you’re warming up.', 'Almost — try leaning into it a little more.'];
+  function pickLine(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  var PROFILE_KEY = 'swara_profile_v1';
+  var PROGRESS_KEY = 'swara_progress_v1';
+
+  function loadProfile(){ try{ return JSON.parse(localStorage.getItem(PROFILE_KEY)); }catch(e){ return null; } }
+  function saveProfile(p){ try{ localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }catch(e){} }
+  function loadProgress(){
+    try{
+      var p = JSON.parse(localStorage.getItem(PROGRESS_KEY));
+      if(p) return p;
+    }catch(e){}
+    return {streak:0, lastActiveDate:null, totalCorrect:0, wordStats:{}, cursors:{}};
+  }
+  function saveProgress(p){ try{ localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); }catch(e){} }
+  function todayStr(){ return new Date().toISOString().slice(0,10); }
+  function daysBetween(a,b){ return Math.round((new Date(b) - new Date(a)) / 86400000); }
+  function langByCode(code){ for(var i=0;i<LANGUAGES.length;i++){ if(LANGUAGES[i].code===code) return LANGUAGES[i]; } return LANGUAGES[0]; }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function prefersReducedMotion(){ try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
+
+  var state = { view:'loading', profile:loadProfile(), progress:loadProgress(), onboardingStep:0, draft:{}, session:null };
+
+  var ONBOARD_STEPS = ['intent','language','baseLang','level','goal','motivation'];
+
+  function computeComeback(){
+    var p = state.progress;
+    if(!p.lastActiveDate) return null;
+    var gap = daysBetween(p.lastActiveDate, todayStr());
+    if(gap >= 2) return gap;
+    return null;
+  }
+
+  function getFlatWords(langCode){
+    var flat = [];
+    VOCAB[langCode].forEach(function(cat){
+      cat.words.forEach(function(w){
+        flat.push({id:langCode+'-'+flat.length, script:w[0], translit:w[1], en:w[2], category:cat.label, flatIndex:flat.length});
+      });
+    });
+    return flat;
+  }
+
+  // A German learner shouldn't have to know English to learn Hindi. Because every
+  // language's word list is built in the same order (see VOCAB above), word #7 always
+  // means the same thing everywhere — so we can show the learner's OWN language as the
+  // meaning instead of assuming English, just by looking up the same index elsewhere.
+  function meaningFor(word, baseLangCode){
+    if(!baseLangCode || baseLangCode === 'en'){
+      return {text: word.en, native:false};
+    }
+    var baseWord = getFlatWords(baseLangCode)[word.flatIndex];
+    if(!baseWord) return {text: word.en, native:false};
+    return {text: baseWord.script, sub: baseWord.translit, native:true, font: langByCode(baseLangCode).font};
+  }
+
+  function peekUpcomingCategory(langCode){
+    var flat = getFlatWords(langCode);
+    var cursor = (state.progress.cursors && state.progress.cursors[langCode]) || 0;
+    return flat[cursor % flat.length].category;
+  }
+
+  function pickSessionWords(langCode, comebackMode){
+    var flat = getFlatWords(langCode);
+    var stats = state.progress.wordStats;
+
+    if(comebackMode){
+      var byWeak = flat.slice().sort(function(a,b){
+        var sa = stats[a.id] || {correct:0, incorrect:0};
+        var sb = stats[b.id] || {correct:0, incorrect:0};
+        return (sb.incorrect - sb.correct) - (sa.incorrect - sa.correct);
+      });
+      return byWeak.slice(0, Math.min(5, flat.length));
+    }
+
+    // Rotate through the whole pool so every new session starts where the last one left off,
+    // instead of always re-picking the same slice (that was the "day 2 repeats day 1" bug).
+    var sessionSize = Math.min(GOAL_MINUTES[(state.profile && state.profile.dailyGoal) || 5] || 8, flat.length);
+    if(!state.progress.cursors) state.progress.cursors = {};
+    var cursor = state.progress.cursors[langCode] || 0;
+    var picked = [];
+    for(var i=0;i<sessionSize;i++){ picked.push(flat[(cursor+i) % flat.length]); }
+    state.progress.cursors[langCode] = (cursor + sessionSize) % flat.length;
+    saveProgress(state.progress);
+    return picked;
+  }
+
+  // ---------- Speech ----------
+  var voicesCache = [];
+  function refreshVoices(){ try{ voicesCache = window.speechSynthesis ? window.speechSynthesis.getVoices() : []; }catch(e){} }
+  if(window.speechSynthesis){
+    refreshVoices();
+    window.speechSynthesis.onvoiceschanged = refreshVoices;
+  }
+  function speak(text, speechLang, onNoVoice){
+    if(!window.speechSynthesis){ if(onNoVoice) onNoVoice(); return; }
+    try{
+      var utter = new SpeechSynthesisUtterance(text);
+      utter.lang = speechLang;
+      var prefix = speechLang.split('-')[0];
+      var match = voicesCache.filter(function(v){ return v.lang && v.lang.toLowerCase().indexOf(prefix) === 0; });
+      if(match.length){ utter.voice = match[0]; } else if(onNoVoice){ onNoVoice(); }
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utter);
+    }catch(e){ if(onNoVoice) onNoVoice(); }
+  }
+
+  function getRecognitionCtor(){ return window.SpeechRecognition || window.webkitSpeechRecognition || null; }
+
+  function normalize(s){ return String(s).trim().toLowerCase().replace(/[.,!?¡¿。，、]/g,''); }
+
+  function fuzzyMatch(expected, heard){
+    var e = normalize(expected), h = normalize(heard);
+    if(!h) return false;
+    if(h === e) return true;
+    if(h.indexOf(e) !== -1 || e.indexOf(h) !== -1) return true;
+    return false;
+  }
+
+  // ---------- Mascot ----------
+  function mascotSvg(mood, size){
+    size = size || 64;
+    var eyes, mouth;
+    if(mood === 'sleepy'){
+      eyes = '<path d="M23 27q3 3 6 0M35 27q3 3 6 0" stroke="var(--paper)" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
+      mouth = '<path d="M27 40q5 3 10 0" stroke="var(--paper)" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
+    } else if(mood === 'excited'){
+      eyes = '<circle cx="26" cy="27" r="3.2" fill="var(--paper)"/><circle cx="38" cy="27" r="3.2" fill="var(--paper)"/>';
+      mouth = '<path d="M24 37q8 11 16 0" stroke="var(--paper)" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    } else if(mood === 'soft'){
+      eyes = '<circle cx="26" cy="27" r="2.6" fill="var(--paper)"/><circle cx="38" cy="27" r="2.6" fill="var(--paper)"/>';
+      mouth = '<path d="M27 39q5 2 10 0" stroke="var(--paper)" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
+    } else {
+      eyes = '<circle cx="26" cy="27" r="3" fill="var(--paper)"/><circle cx="38" cy="27" r="3" fill="var(--paper)"/>';
+      mouth = '<path d="M25 38q7 6 14 0" stroke="var(--paper)" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    }
+    return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" style="fill:var(--accent)"/>'+eyes+mouth+'</svg>';
+  }
+
+  function mascotBadge(mood, size){
+    return '<div class="mascot-badge" style="width:'+size+'px;height:'+size+'px;">'+mascotSvg(mood, Math.round(size*0.82))+'</div>';
+  }
+
+  function mascotBubble(mood, text, small){
+    return '<div class="mascot-row'+(small?' small':'')+'">'+mascotBadge(mood, small?40:52)+'<div class="speech-bubble">'+text+'</div></div>';
+  }
+
+  // ---------- Render ----------
+  var app = document.getElementById('app');
+
+  function render(){
+    if(!state.profile){ renderOnboarding(); return; }
+    if(state.view === 'lesson'){ renderLesson(); }
+    else if(state.view === 'summary'){ renderSummary(); }
+    else { renderDashboard(); }
+  }
+
+  function stepDots(total, doneIdx){
+    var html = '<div class="step-progress">';
+    for(var i=0;i<total;i++){ html += '<div class="step-dot'+(i<=doneIdx?' done':'')+'"></div>'; }
+    return html + '</div>';
+  }
+
+  function renderOnboarding(){
+    var step = ONBOARD_STEPS[state.onboardingStep];
+    var html = '<div class="topbar"><div class="wordmark">'+micSvg()+' Swara</div></div>';
+    html += '<div class="card"><div class="stage">';
+
+    if(step === 'intent'){
+      html += '<div class="mascot-hero">'+mascotBadge('excited', 104)+'<h1 class="hero-title">Hi, I’m Dhun.</h1>';
+      html += '<p class="hero-tagline">I’ll help you find your rhythm in nine languages — real voice practice, not just flashcards.</p></div>';
+    }
+    html += stepDots(ONBOARD_STEPS.length, state.onboardingStep - 1);
+
+    if(step === 'intent'){
+      html += '<div class="q-title">What brings you here today?</div>';
+      html += '<div class="option-list">';
+      html += optionCard('intent','improver','I’m sharpening a language I know','Get back your fluency and confidence speaking it');
+      html += optionCard('intent','explorer','I’m exploring something new','Curious to try a language I’ve never learned');
+      html += '</div>';
+    } else if(step === 'language'){
+      html += mascotBubble('happy', 'Which one calls to you?', true);
+      html += '<div class="q-title" style="margin-top:14px;">Which language?</div><div class="q-sub">Pick the one you want to speak today.</div>';
+      html += '<div class="lang-grid">';
+      var groups = ['Indian languages','World languages'];
+      groups.forEach(function(g){
+        html += '<div class="lang-group-label" style="grid-column:1/-1;">'+g+'</div>';
+        LANGUAGES.filter(function(l){return l.group===g;}).forEach(function(l){
+          html += '<button class="lang-card" data-action="pick-lang" data-value="'+l.code+'"><span class="lang-native '+l.font+'">'+l.native+'</span><span class="lang-en">'+l.name+'</span></button>';
+        });
+      });
+      html += '</div>';
+    } else if(step === 'baseLang'){
+      var targetLang = langByCode(state.draft.targetLang);
+      html += mascotBubble('soft', 'One more thing — I don’t want to assume you read English.', true);
+      html += '<div class="q-title" style="margin-top:14px;">Which language are you comfortable reading?</div>';
+      html += '<div class="q-sub">I’ll explain every '+targetLang.name+' word in this language instead.</div>';
+      html += '<div class="lang-grid">';
+      html += '<button class="lang-card" data-action="pick-baseLang" data-value="en"><span class="lang-native font-latin">English</span><span class="lang-en">English</span></button>';
+      LANGUAGES.filter(function(l){ return l.code !== state.draft.targetLang; }).forEach(function(l){
+        html += '<button class="lang-card" data-action="pick-baseLang" data-value="'+l.code+'"><span class="lang-native '+l.font+'">'+l.native+'</span><span class="lang-en">'+l.name+'</span></button>';
+      });
+      html += '</div>';
+      html += '<div class="voice-note">Menus stay in English for this preview — word meanings will appear in your language.</div>';
+    } else if(step === 'level'){
+      html += '<div class="q-title">Where are you starting from?</div>';
+      html += '<div class="option-list">';
+      html += optionCard('level','new','New to it','Start me from the very beginning');
+      html += optionCard('level','some','Know some words','Skip ahead a little — I’ve picked up bits before');
+      html += optionCard('level','rusty','Conversational but rusty','I used to speak it — jump me further in');
+      html += '</div>';
+    } else if(step === 'goal'){
+      html += '<div class="q-title">How much time can you give it, most days?</div>';
+      html += '<div class="option-list">';
+      html += optionCard('goal','2','2 minutes','A quick daily sip');
+      html += optionCard('goal','5','5 minutes','A steady, standard pace');
+      html += optionCard('goal','10','10 minutes','A deeper daily dive');
+      html += '</div>';
+    } else if(step === 'motivation'){
+      html += '<div class="q-title">What’s pulling you toward this language?</div>';
+      html += '<div class="option-list">';
+      Object.keys(MOTIVATION_COPY).forEach(function(k){
+        html += optionCard('motivation', k, MOTIVATION_COPY[k].label, MOTIVATION_COPY[k].sub);
+      });
+      html += '</div>';
+    }
+
+    html += '</div></div>';
+    app.innerHTML = html;
+    wireOnboarding();
+  }
+
+  function optionCard(field, value, title, sub){
+    return '<button class="option-card" data-action="pick-'+field+'" data-value="'+value+'"><span class="opt-title">'+title+'</span><span class="opt-sub">'+sub+'</span></button>';
+  }
+
+  function wireOnboarding(){
+    app.querySelectorAll('[data-action]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var action = el.getAttribute('data-action');
+        var value = el.getAttribute('data-value');
+        if(action === 'pick-intent'){ state.draft.intent = value; advanceOnboarding(); }
+        else if(action === 'pick-lang'){ state.draft.targetLang = value; advanceOnboarding(); }
+        else if(action === 'pick-baseLang'){ state.draft.baseLang = value; advanceOnboarding(); }
+        else if(action === 'pick-level'){ state.draft.level = value; advanceOnboarding(); }
+        else if(action === 'pick-goal'){ state.draft.dailyGoal = parseInt(value,10); advanceOnboarding(); }
+        else if(action === 'pick-motivation'){ finishOnboarding(value); }
+      });
+    });
+  }
+
+  function finishOnboarding(motivationValue){
+    state.draft.motivation = motivationValue;
+    state.profile = state.draft;
+    saveProfile(state.profile);
+
+    // Self-rated level gives a real starting point, not just flavour text:
+    // "some" skips past the absolute-beginner set, "rusty" skips further still.
+    var lang = state.profile.targetLang;
+    var essentialsLen = VOCAB[lang][0].words.length;
+    var numbersLen = VOCAB[lang][1].words.length;
+    var flatLen = getFlatWords(lang).length;
+    var startCursor = 0;
+    if(state.profile.level === 'some'){ startCursor = essentialsLen; }
+    else if(state.profile.level === 'rusty'){ startCursor = essentialsLen + numbersLen; }
+    if(!state.progress.cursors) state.progress.cursors = {};
+    state.progress.cursors[lang] = startCursor % flatLen;
+    saveProgress(state.progress);
+
+    state.view = 'dashboard';
+    render();
+  }
+
+  function advanceOnboarding(){ state.onboardingStep++; render(); }
+
+  function micSvg(){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>';
+  }
+  function speakerSvg(){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a9 9 0 0 1 0 12"/></svg>';
+  }
+  function flameSvg(){
+    return '<svg viewBox="0 0 24 24" width="16" height="16" fill="'+  'currentColor' +'"><path d="M12 2c1 3-3 4-3 8a3 3 0 0 0 6 0c0-1-1-2-1-2 2 1 3 3 3 5a5 5 0 0 1-10 0c0-5 4-6 5-11z"/></svg>';
+  }
+  function chevronSvg(){
+    return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+  }
+
+  function renderDashboard(){
+    var lang = langByCode(state.profile.targetLang);
+    var baseName = state.profile.baseLang === 'en' ? 'English' : langByCode(state.profile.baseLang).name;
+    var comebackGap = computeComeback();
+    var mot = MOTIVATION_COPY[state.profile.motivation];
+    var html = '<div class="topbar"><div class="wordmark">'+micSvg()+' Swara</div>';
+    html += '<div class="streak-pill" style="color:var(--accent-2-text);">'+flameSvg()+' '+state.progress.streak+'</div></div>';
+    html += '<div class="card"><div class="stage">';
+
+    if(comebackGap){
+      html += '<div class="comeback-banner">';
+      html += '<div class="mascot-row">'+mascotBadge('sleepy', 52)+'<div><div class="cb-eyebrow">Dhun missed you</div><h3>'+comebackGap+' days away</h3></div></div>';
+      html += '<p>'+mot.comeback+'</p>';
+      html += '<button class="btn btn-primary" style="background:var(--surface);color:var(--accent-2-ink);" data-action="start-comeback">Start refresher</button></div>';
+    } else {
+      var mood = state.progress.streak >= 7 ? 'excited' : 'happy';
+      var line = state.progress.streak === 0
+        ? 'Ready when you are — let’s start your streak.'
+        : (state.profile.intent === 'improver' ? 'Day '+state.progress.streak+'. Let’s keep that fluency warm.' : 'Day '+state.progress.streak+'. Where should we explore today?');
+      html += mascotBubble(mood, line);
+    }
+
+    html += '<div class="eyebrow" style="margin-top:16px;">'+(state.profile.intent==='improver' ? 'Sharpening' : 'Exploring')+'</div>';
+    html += '<button class="home-lang-tile" data-action="switch-lang"><span class="native '+lang.font+'">'+lang.native+'</span><div class="tile-info"><div style="font-weight:600;">'+lang.name+'</div><div class="meta">Meanings shown in '+baseName+' · tap to switch</div></div><span class="tile-chevron">'+chevronSvg()+'</span></button>';
+
+    html += '<div class="home-headline">'+(state.progress.streak>0 ? 'Day '+state.progress.streak+' streak' : 'Ready for your first lesson?')+'</div>';
+    html += '<div class="home-sub">Today’s set: '+peekUpcomingCategory(state.profile.targetLang)+' · '+(GOAL_MINUTES[state.profile.dailyGoal]||8)+' words · about '+state.profile.dailyGoal+' min</div>';
+    html += '<button class="btn btn-primary" data-action="start-lesson">Start today’s lesson</button>';
+
+    html += '</div></div>';
+    app.innerHTML = html;
+
+    app.querySelector('[data-action="start-lesson"]').addEventListener('click', function(){ startSession(false); });
+    var cb = app.querySelector('[data-action="start-comeback"]');
+    if(cb) cb.addEventListener('click', function(){ startSession(true); });
+    app.querySelector('[data-action="switch-lang"]').addEventListener('click', openSwitchLang);
+  }
+
+  function resetDemo(){
+    try{ localStorage.removeItem(PROFILE_KEY); localStorage.removeItem(PROGRESS_KEY); }catch(e){}
+    state.profile = null;
+    state.progress = loadProgress();
+    state.draft = {};
+    state.onboardingStep = 0;
+    render();
+  }
+
+  function openSwitchLang(){
+    var html = '<div class="modal-backdrop" data-action="close-modal"><div class="modal-sheet" onclick="event.stopPropagation()">';
+    html += '<div class="q-title">Switch language</div><div class="q-sub">Your progress in other languages is kept separately.</div>';
+    html += '<div class="lang-grid">';
+    ['Indian languages','World languages'].forEach(function(g){
+      html += '<div class="lang-group-label" style="grid-column:1/-1;">'+g+'</div>';
+      LANGUAGES.filter(function(l){return l.group===g;}).forEach(function(l){
+        html += '<button class="lang-card" data-action="switch-to" data-value="'+l.code+'"><span class="lang-native '+l.font+'">'+l.native+'</span><span class="lang-en">'+l.name+'</span></button>';
+      });
+    });
+    html += '</div>';
+    html += '<button class="btn-text" data-action="reset-demo-modal" style="margin-top:14px;">Not you? Start over completely</button>';
+    html += '</div></div>';
+    var wrap = document.createElement('div');
+    wrap.innerHTML = html;
+    document.body.appendChild(wrap);
+    wrap.querySelector('[data-action="close-modal"]').addEventListener('click', function(e){ if(e.target === e.currentTarget){ document.body.removeChild(wrap); } });
+    wrap.querySelector('[data-action="reset-demo-modal"]').addEventListener('click', function(){
+      document.body.removeChild(wrap);
+      resetDemo();
+    });
+    wrap.querySelectorAll('[data-action="switch-to"]').forEach(function(el){
+      el.addEventListener('click', function(){
+        state.profile.targetLang = el.getAttribute('data-value');
+        saveProfile(state.profile);
+        document.body.removeChild(wrap);
+        render();
+      });
+    });
+  }
+
+  function startSession(comebackMode){
+    var words = pickSessionWords(state.profile.targetLang, comebackMode);
+    state.session = {words:words, idx:0, comeback:comebackMode, results:[], noVoiceWarned:false, recognitionFailed:false, recognitionFailReason:null};
+    state.view = 'lesson';
+    render();
+  }
+
+  function renderLesson(){
+    var lang = langByCode(state.profile.targetLang);
+    var s = state.session;
+    var word = s.words[s.idx];
+    var meaning = meaningFor(word, state.profile.baseLang);
+    var html = '<div class="topbar"><div class="wordmark">'+micSvg()+' Swara</div><div class="streak-pill">'+lang.name+'</div></div>';
+    html += '<div class="card"><div class="session-progress-row"><span>'+(s.comeback?'Refresher':word.category)+'</span><span>'+(s.idx+1)+' / '+s.words.length+'</span></div>';
+    html += '<div class="session-bar"><div class="session-bar-fill" style="width:'+Math.round(((s.idx)/s.words.length)*100)+'%"></div></div>';
+
+    html += '<div class="vocab-stage"><div class="vocab-script '+lang.font+'">'+escapeHtml(word.script)+'</div>';
+    if(lang.font !== 'font-latin'){ html += '<div class="vocab-translit">'+escapeHtml(word.translit)+'</div>'; }
+    if(meaning.native){
+      html += '<div class="vocab-meaning '+meaning.font+'">'+escapeHtml(meaning.text)+' <span class="meaning-sub">('+escapeHtml(meaning.sub)+')</span></div>';
+    } else {
+      html += '<div class="vocab-meaning gloss-en">'+escapeHtml(meaning.text)+'</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="voice-row">';
+    html += '<button class="voice-btn" data-action="play">'+speakerSvg()+'<span>Play</span></button>';
+    var hasRecognition = !!getRecognitionCtor();
+    if(!hasRecognition && !s.recognitionFailReason){ s.recognitionFailReason = 'unsupported'; }
+    if(hasRecognition && !s.recognitionFailed){
+      html += '<button class="voice-btn mic-btn" id="mic-btn" data-action="listen">'+micSvg()+'<span>Your turn</span></button>';
+    } else {
+      html += '<button class="voice-btn mic-btn" data-action="self-said">'+micSvg()+'<span>I said it</span></button>';
+    }
+    html += '</div>';
+
+    html += '<div id="voice-note-slot"></div>';
+    html += '<div id="feedback-slot"></div>';
+    var isLast = s.idx >= s.words.length - 1;
+    html += '<button class="btn btn-primary" style="margin-top:16px;" data-action="next-word">'+(isLast ? 'Finish lesson' : 'Next word')+'</button>';
+
+    html += '</div>';
+    app.innerHTML = html;
+
+    app.querySelector('[data-action="play"]').addEventListener('click', function(){
+      speak(word.script, lang.speech, function(){
+        if(!s.noVoiceWarned){
+          s.noVoiceWarned = true;
+          document.getElementById('voice-note-slot').innerHTML = '<div class="voice-note">Playback voice for '+lang.name+' isn’t installed in this browser. Chrome tends to have the widest language coverage — or read the transliteration aloud yourself.</div>';
+        }
+      });
+    });
+
+    var micBtn = app.querySelector('[data-action="listen"]');
+    if(micBtn){
+      micBtn.addEventListener('click', function(){ startListening(lang, word, micBtn); });
+    }
+    var selfBtn = app.querySelector('[data-action="self-said"]');
+    if(selfBtn){
+      selfBtn.addEventListener('click', function(){ showSelfCheck(word); });
+    }
+    app.querySelector('[data-action="next-word"]').addEventListener('click', advanceLesson);
+  }
+
+  function advanceLesson(){
+    if(window.speechSynthesis) window.speechSynthesis.cancel();
+    var isLast = state.session.idx >= state.session.words.length - 1;
+    if(isLast){ finishSession(); } else { state.session.idx++; renderLesson(); }
+  }
+
+  function failRecognition(reason){
+    state.session.recognitionFailed = true;
+    state.session.recognitionFailReason = reason;
+    renderLesson();
+  }
+
+  function startListening(lang, word, btn){
+    var Ctor = getRecognitionCtor();
+    if(!Ctor){ failRecognition('unsupported'); return; }
+
+    function noteTransient(msg){
+      var slot = document.getElementById('voice-note-slot');
+      if(slot) slot.innerHTML = '<div class="voice-note">'+msg+'</div>';
+    }
+
+    function begin(){
+      try{
+        var rec = new Ctor();
+        rec.lang = lang.speech;
+        rec.maxAlternatives = 3;
+        btn.classList.add('listening');
+        rec.onresult = function(ev){
+          btn.classList.remove('listening');
+          var heard = ev.results[0][0].transcript;
+          var ok = fuzzyMatch(word.script, heard) || fuzzyMatch(word.translit, heard);
+          showFeedback(word, ok);
+        };
+        rec.onerror = function(ev){
+          btn.classList.remove('listening');
+          var err = ev && ev.error;
+          if(err === 'not-allowed' || err === 'service-not-allowed'){
+            failRecognition('blocked');
+          } else if(err === 'audio-capture'){
+            failRecognition('no-mic');
+          } else {
+            noteTransient('Didn’t catch that — tap the mic and try again.');
+          }
+        };
+        rec.onend = function(){ btn.classList.remove('listening'); };
+        rec.start();
+      }catch(e){
+        failRecognition('other');
+      }
+    }
+
+    // Prime microphone permission explicitly first: gives a reliable permission
+    // prompt across browsers, and lets us tell a real permission/hardware failure
+    // apart from an unsupported browser or a sandboxed preview with no mic access.
+    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+      navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+        stream.getTracks().forEach(function(t){ t.stop(); });
+        begin();
+      }).catch(function(err){
+        var name = err && err.name;
+        if(name === 'NotAllowedError' || name === 'PermissionDeniedError' || name === 'SecurityError'){
+          failRecognition('blocked');
+        } else if(name === 'NotFoundError' || name === 'DevicesNotFoundError'){
+          failRecognition('no-mic');
+        } else {
+          failRecognition('other');
+        }
+      });
+    } else {
+      begin();
+    }
+  }
+
+  function isEmbeddedPreview(){
+    try{ return window.self !== window.top; }catch(e){ return true; }
+  }
+
+  function voiceUnavailableMessage(){
+    var reason = state.session && state.session.recognitionFailReason;
+    if(reason === 'unsupported'){
+      return 'This browser doesn’t support live voice recognition. Try Chrome or Edge for the full voice experience — for now, say it out loud, then mark yourself.';
+    }
+    if(reason === 'no-mic'){
+      return 'No microphone was found on this device. Say it out loud, then mark yourself.';
+    }
+    if(reason === 'blocked' && isEmbeddedPreview()){
+      return 'Voice input isn’t available in this embedded preview — it’ll use your microphone automatically once this page is hosted on its own domain. For now, say it out loud, then mark yourself.';
+    }
+    if(reason === 'blocked'){
+      return 'Microphone access was blocked for this site. Check your browser’s site settings, allow the microphone, then reload — for now, say it out loud and mark yourself.';
+    }
+    return 'Voice input couldn’t start on this device or browser. Say it out loud, then mark yourself.';
+  }
+
+  function showSelfCheck(word){
+    document.getElementById('voice-note-slot').innerHTML = '<div class="voice-note">'+voiceUnavailableMessage()+'</div>';
+    document.getElementById('feedback-slot').innerHTML = '<div class="self-check-row"><button class="btn btn-primary" data-self="yes">Got it right</button><button class="btn btn-ghost" data-self="no">Need practice</button></div>';
+    document.querySelector('[data-self="yes"]').addEventListener('click', function(){ showFeedback(word, true); });
+    document.querySelector('[data-self="no"]').addEventListener('click', function(){ showFeedback(word, false); });
+  }
+
+  function showFeedback(word, ok){
+    var stats = state.progress.wordStats;
+    if(!stats[word.id]) stats[word.id] = {correct:0, incorrect:0};
+    if(ok){ stats[word.id].correct++; } else { stats[word.id].incorrect++; }
+    saveProgress(state.progress);
+    state.session.results.push(ok);
+
+    var line = ok ? pickLine(CHEER_LINES) : pickLine(NUDGE_LINES) + ' It’s <strong>' + escapeHtml(word.translit) + '</strong>.';
+    var bubbleClass = ok ? 'correct' : 'retry';
+    document.getElementById('feedback-slot').innerHTML =
+      '<div class="feedback-row"><div class="mascot-row small">'+mascotBadge(ok?'excited':'soft', 40)+'<div class="speech-bubble '+bubbleClass+'">'+line+'</div></div></div>';
+  }
+
+  function finishSession(){
+    var s = state.session;
+    var correctCount = s.results.filter(Boolean).length;
+    var today = todayStr();
+    var p = state.progress;
+    if(p.lastActiveDate !== today){
+      var gap = p.lastActiveDate ? daysBetween(p.lastActiveDate, today) : 1;
+      p.streak = (gap <= 1) ? p.streak + 1 : 1;
+    }
+    p.lastActiveDate = today;
+    p.totalCorrect += correctCount;
+    saveProgress(p);
+    state.progress = p;
+    state.view = 'summary';
+    state.session.correctCount = correctCount;
+    state.session.milestoneHit = MILESTONES.indexOf(p.streak) !== -1 ? p.streak : null;
+    render();
+  }
+
+  function confettiMarkup(){
+    if(prefersReducedMotion()) return '';
+    var colors = ['var(--accent)','var(--accent-2)','var(--success)'];
+    var pieces = '';
+    for(var i=0;i<14;i++){
+      var left = Math.round(Math.random()*100);
+      var delay = Math.round(Math.random()*250);
+      var color = colors[i % colors.length];
+      pieces += '<i style="left:'+left+'%;background:'+color+';animation-delay:'+delay+'ms;"></i>';
+    }
+    return '<div class="confetti">'+pieces+'</div>';
+  }
+
+  function renderSummary(){
+    var s = state.session;
+    var html = '<div class="topbar"><div class="wordmark">'+micSvg()+' Swara</div></div>';
+    html += '<div class="card">'+confettiMarkup()+'<div class="stage">';
+    html += mascotBubble('excited', s.comeback ? 'Welcome back in full swing — that’s the streak protected.' : pickLine(['Nice work — see you tomorrow?','That’s a wrap. Feeling sharper already.','Great session. Same time tomorrow?']));
+    if(s.milestoneHit){
+      html += '<div class="milestone-panel">'+flameSvg()+' '+s.milestoneHit+'-day streak unlocked — I’m doing a little dance over here.</div>';
+    }
+    html += '<div class="summary-stats">';
+    html += '<div class="stat-tile"><span class="stat-num">'+s.words.length+'</span><span class="stat-label">Practiced</span></div>';
+    html += '<div class="stat-tile"><span class="stat-num">'+s.correctCount+'</span><span class="stat-label">Nailed it</span></div>';
+    html += '<div class="stat-tile"><span class="stat-num" style="color:var(--accent-2-text);">'+state.progress.streak+'</span><span class="stat-label">Day streak</span></div>';
+    html += '</div>';
+    html += '<button class="btn btn-primary" data-action="back">Back to dashboard</button>';
+    html += '</div></div>';
+    app.innerHTML = html;
+    app.querySelector('[data-action="back"]').addEventListener('click', function(){ state.view = 'dashboard'; state.session = null; render(); });
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
